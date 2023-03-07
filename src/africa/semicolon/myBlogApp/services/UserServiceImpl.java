@@ -2,14 +2,18 @@ package africa.semicolon.myBlogApp.services;
 
 import africa.semicolon.myBlogApp.data.models.User;
 import africa.semicolon.myBlogApp.data.repositories.UserRepository;
-import africa.semicolon.myBlogApp.data.repositories.UserRepositoryImpl;
 import africa.semicolon.myBlogApp.dtos.requests.RegisterRequest;
 import africa.semicolon.myBlogApp.dtos.responses.FindUserResponses;
 import africa.semicolon.myBlogApp.utils.Mapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 
+@Service
 public class UserServiceImpl implements UserService{
-    private static UserRepository userRepository = new UserRepositoryImpl();
+    @Autowired
+    private UserRepository userRepository;
     @Override
     public User register(RegisterRequest registerRequest) {
         if (userExist(registerRequest.getUsername())) throw new IllegalArgumentException(registerRequest.getUsername() + "already exist");
@@ -21,16 +25,16 @@ public class UserServiceImpl implements UserService{
 
     private boolean userExist(String userName) {
         User found = userRepository.findByUserName(userName);
-        if (found != null) return true;
-        return false;
+        return found != null;
     }
 
     @Override
-    public FindUserResponses findUser(int id) {
-        User foundUser = userRepository.findById(id);
-        if (foundUser == null ) throw new NullPointerException("User does not exist");
+    public FindUserResponses findUser(String id) {
+        Optional<User> foundUser = userRepository.findById(id);
+        System.out.println(foundUser);
+        if (foundUser.isEmpty() ) throw new NullPointerException("User does not exist");
         FindUserResponses response = new FindUserResponses();
-        Mapper.map(foundUser, response);
+        Mapper.map(foundUser.get(), response);
         return response;
     }
 
@@ -41,7 +45,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(String id) {
 
     }
 }
